@@ -1,6 +1,7 @@
 import express from 'express';
 import * as gameController from '../controllers/game.controller.js';
 import * as gameValidator from '../validators/game.validator.js';
+import * as investigationController from '../controllers/investigation.controller.js';
 import validate from '../middleware/validate.js';
 
 const router = express.Router();
@@ -63,6 +64,22 @@ router.get('/:code/session/character/:playerId',
   gameValidator.playerIdValidator, 
   validate, 
   gameController.getGameSessionCharacter
+);
+
+router.post('/:code/action', 
+  investigationController.submitAction
+);
+
+router.get('/:code/logs', 
+  investigationController.getLogs
+);
+
+router.post('/:code/start-vote', 
+  investigationController.startVoting
+);
+
+router.post('/:code/vote', 
+  investigationController.castVote
 );
 
 router.delete('/:code', 
