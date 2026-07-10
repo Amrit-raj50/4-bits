@@ -3,7 +3,19 @@
   Validates story generation request data and engine output.
 */
 
-const OUTPUT_KEYS = ['world', 'crime', 'victim', 'murderer', 'storySeed'];
+const OUTPUT_KEYS = [
+  'theme',
+  'world',
+  'crime',
+  'victim',
+  'murderer',
+  'location',
+  'timeOfDeath',
+  'murderWeapon',
+  'causeOfDeath',
+  'motiveSummary',
+  'storySeed',
+];
 
 class StoryValidator {
   static validateInput(payload) {
@@ -29,6 +41,14 @@ class StoryValidator {
       if (!result[key] || typeof result[key] !== 'string') {
         throw new Error(`Story output must include a valid '${key}'.`);
       }
+    }
+
+    if (!result.victimCharacter || typeof result.victimCharacter !== 'object') {
+      throw new Error('Story output must include a valid victimCharacter object.');
+    }
+
+    if (!Array.isArray(result.suspects) || result.suspects.length === 0) {
+      throw new Error('Story output must include a valid suspects array.');
     }
   }
 }

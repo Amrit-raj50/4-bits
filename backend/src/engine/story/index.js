@@ -13,12 +13,12 @@ class StoryEngine {
     this.validator = StoryValidator;
   }
 
-  async generateStory({ theme, seed }) {
+  async generateStory({ theme, seed, playerCount }) {
     this.validator.validateInput({ theme, seed });
 
-    const prompt = buildStoryPrompt({ theme, seed });
+    const prompt = buildStoryPrompt({ theme, seed, playerCount });
     const response = await this.aiClient.generateCompletion(prompt, {
-      model: 'qwen3:8b',
+      model: process.env.OLLAMA_MODEL || 'qwen3:8b',
       temperature: 0.7,
       stream: false,
     });
