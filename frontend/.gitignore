@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build/Cache directories
+.tanstack/
+.output/
+dist/

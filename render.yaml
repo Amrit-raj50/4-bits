@@ -4,12 +4,14 @@ services:
     env: node
     rootDir: frontend
     buildCommand: npm install --include=dev && npm run build
-    startCommand: npm start
+    startCommand: node .output/server/index.mjs
     envVars:
       - key: VITE_API_URL
         sync: false
       - key: PORT
         value: 3000
+      - key: NITRO_PRESET
+        value: node-server
 
   - type: web
     name: hacksprint-backend
