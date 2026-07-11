@@ -69,11 +69,12 @@ Logs of the entire conversation/actions:
 ${JSON.stringify(gameContext.logs.map(l => `[${l.author}]: ${l.text}`).slice(-50))}
 
 Generate a compelling, atmospheric final reveal summarizing:
-1. Who the murderer is and the motive.
-2. Complete timeline of how it happened.
-3. Which clues mattered and which were ignored.
-4. Summary of who lied, who told the truth, and any interesting moments from the logs.
-5. Explain who the players voted for and whether they were correct.
+1. Who committed the murder and why they were chosen (motive).
+2. Complete timeline of events.
+3. Which clues mattered.
+4. Which clues were ignored.
+5. Which players lied and who told the truth.
+6. Explain who the players voted for and whether they were correct.
 
 Write in a dramatic, mystery-style tone. Do not include markdown code blocks.
 `;

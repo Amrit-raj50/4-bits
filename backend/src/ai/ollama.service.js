@@ -7,7 +7,7 @@
 
 const DEFAULT_TIMEOUT_MS = 15000;
 const DEFAULT_RETRY_COUNT = 2;
-const DEFAULT_MODEL = 'qwen3:8b';
+const DEFAULT_MODEL = 'qwen2.7b';
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_STREAM = false;
 const DEFAULT_BASE_URL = 'http://localhost:11434';

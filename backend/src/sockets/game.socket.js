@@ -255,14 +255,16 @@ const gameHandler = (io, socket) => {
           let outcome = null;
           if (session.votingState.eliminatedId === murdererPlayerId) {
             outcome = 'investigators_win';
-          } else if (session.votingState.eliminatedId) {
-            // Wrong person voted out - check if killer wins
+          } else {
+            // Wrong person voted out or abstain - check if killer wins
             const remainingInvestigators = game.players.filter(p =>
               p.isConnected &&
               p.playerId !== murdererPlayerId &&
               p.playerId !== session.votingState.eliminatedId
             );
-            if (remainingInvestigators.length === 0) {
+            
+            // If all investigators are dead, or this is the final round and they failed to get the killer
+            if (remainingInvestigators.length === 0 || session.roundNumber >= (session.maxRounds || 3)) {
               outcome = 'killer_wins';
             }
           }

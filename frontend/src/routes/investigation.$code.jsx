@@ -71,6 +71,12 @@ function InvestigationScreen() {
   // Mobile Tab State
   const [activeTab, setActiveTab] = useState("log");
 
+  // STT/TTS State
+  const [isListening, setIsListening] = useState(false);
+  const [autoReadMessages, setAutoReadMessages] = useState(false);
+  const recognitionRef = useRef(null);
+  const autoReadRef = useRef(false);
+
   // Desktop Sidebar State
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
@@ -116,6 +122,48 @@ function InvestigationScreen() {
       osc.start();
       osc.stop(ctx.currentTime + 0.25);
     } catch (e) {}
+  };
+
+  useEffect(() => {
+    autoReadRef.current = autoReadMessages;
+  }, [autoReadMessages]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setChatText(transcript);
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const handleToggleListening = (e) => {
+    e.preventDefault();
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const handleSpeakMessage = (text) => {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
   };
 
   useEffect(() => {
@@ -274,6 +322,9 @@ function InvestigationScreen() {
 
     sock.on("chat:received", (chatMsg) => {
       setChatMessages((prev) => [...prev, chatMsg]);
+      if (autoReadRef.current) {
+        handleSpeakMessage(`${chatMsg.senderName} says: ${chatMsg.text}`);
+      }
     });
 
     sock.on("player:suspect:updated", (data) => {
@@ -400,6 +451,14 @@ function InvestigationScreen() {
     setSubmitting(true);
     playThudSound();
     try {
+      if (actionType === 'share') {
+        if (socket) {
+          socket.emit("chat:send", { text: `Hey everyone, you should come check out the ${actionTarget || hotspot?.name}!` });
+        }
+        setActiveView("chat");
+        return;
+      }
+
       await submitAction(code, playerId, {
         type: actionType,
         target: actionTarget,
@@ -796,7 +855,7 @@ function InvestigationScreen() {
         <div className="flex-1 h-full w-full relative">
           {socket && (
             <GameCanvas
-              sceneKey={isMeetingActive ? "MeetingScene" : "InvestigationScene"}
+              sceneKey={phase === 'result' ? 'FinalRevealScene' : (isMeetingActive ? "MeetingScene" : "InvestigationScene")}
               socket={socket}
               roomCode={code}
               playerId={playerId}
@@ -980,6 +1039,20 @@ function InvestigationScreen() {
 
               {activeView === "chat" && (
                 <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="p-2 border-b border-stone-850 flex justify-between items-center bg-stone-900/40">
+                    <span className="font-typewriter text-[10px] text-stone-400">DISCUSSION</span>
+                    <button 
+                      onClick={() => setAutoReadMessages(!autoReadMessages)}
+                      className={`flex items-center gap-1 px-2 py-1 text-[9px] font-typewriter border rounded-sm transition-colors ${
+                        autoReadMessages 
+                          ? "border-amber-600 text-amber-500 bg-amber-950/20" 
+                          : "border-stone-800 text-stone-500 hover:text-stone-300"
+                      }`}
+                    >
+                      {autoReadMessages ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+                      {autoReadMessages ? "AUTO-READ ON" : "AUTO-READ OFF"}
+                    </button>
+                  </div>
                   <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
                     {chatMessages.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center py-12">
@@ -992,9 +1065,20 @@ function InvestigationScreen() {
                           const isMe = msg.senderId === playerId;
                           return (
                             <div key={idx} className={`max-w-xs ${isMe ? 'ml-auto text-right' : ''}`}>
-                              <span className="font-typewriter text-[7.5px] text-stone-500 block mb-0.5">
-                                {msg.senderName}
-                              </span>
+                              <div className={`flex items-center gap-2 mb-0.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                <span className="font-typewriter text-[7.5px] text-stone-500">
+                                  {msg.senderName}
+                                </span>
+                                {!isMe && (
+                                  <button 
+                                    onClick={() => handleSpeakMessage(msg.text)}
+                                    className="text-stone-500 hover:text-stone-300 transition-colors"
+                                    title="Read Aloud"
+                                  >
+                                    <Volume2 className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                              </div>
                               <div className={`p-2 inline-block rounded ${isMe ? 'bg-amber-950/30 border border-amber-900/30 text-amber-100' : 'bg-stone-900 border border-stone-850 text-stone-300'}`}>
                                 <p className="text-[11px] font-courier leading-normal">{msg.text}</p>
                               </div>
@@ -1006,7 +1090,19 @@ function InvestigationScreen() {
                     )}
                   </div>
                   
-                  <form onSubmit={handleSendChatMessage} className="p-2 border-t border-stone-850 bg-stone-950/80 flex gap-2 shrink-0">
+                  <form onSubmit={handleSendChatMessage} className="p-2 border-t border-stone-850 bg-stone-950/80 flex gap-2 shrink-0 items-center">
+                    <button
+                      type="button"
+                      onClick={handleToggleListening}
+                      className={`p-1.5 border rounded-sm transition-colors shrink-0 ${
+                        isListening 
+                          ? "border-red-600 text-red-500 bg-red-950/20" 
+                          : "border-stone-800 text-stone-400 hover:bg-stone-900"
+                      }`}
+                      title={isListening ? "Stop Dictation" : "Start Dictation"}
+                    >
+                      <Mic className="w-3.5 h-3.5" />
+                    </button>
                     <input
                       type="text"
                       value={chatText}
@@ -1030,7 +1126,7 @@ function InvestigationScreen() {
               <div className="absolute bottom-0 left-0 right-0 border-t border-stone-850 bg-stone-950 p-4 shadow-xl z-20">
                 <form onSubmit={handleActionSubmit} className="space-y-3">
                   <div className="flex flex-wrap gap-1">
-                    {['ask', 'request', 'inspect', 'accuse'].map(type => (
+                    {['ask', 'request', 'inspect', 'accuse', ...(hotspot?.type === 'inspect' ? ['share'] : [])].map(type => (
                       <button
                         key={type}
                         type="button"
@@ -1039,7 +1135,9 @@ function InvestigationScreen() {
                           actionType === type 
                             ? type === 'accuse' 
                               ? 'border-red-950 bg-red-950/20 text-red-500' 
-                              : 'border-amber-600 bg-amber-950/15 text-amber-500'
+                              : type === 'share'
+                                ? 'border-blue-900 bg-blue-950/20 text-blue-500'
+                                : 'border-amber-600 bg-amber-950/15 text-amber-500'
                             : 'border-stone-800 text-stone-500 hover:border-stone-600'
                         }`}
                       >

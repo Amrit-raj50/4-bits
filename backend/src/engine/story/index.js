@@ -18,7 +18,7 @@ class StoryEngine {
 
     const prompt = buildStoryPrompt({ theme, seed, playerCount });
     const response = await this.aiClient.generateCompletion(prompt, {
-      model: process.env.OLLAMA_MODEL || 'qwen3:8b',
+      model: process.env.OLLAMA_MODEL || 'qwen2.7b',
       temperature: 0.7,
       stream: false,
     });

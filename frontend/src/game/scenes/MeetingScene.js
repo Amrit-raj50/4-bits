@@ -26,6 +26,7 @@ export default class MeetingScene extends Phaser.Scene {
     this.playerId = data.playerId;
     this.players = data.players || [];
     this.clues = data.clues || [];
+    this.phase = data.phase || 'discussion';
     this.lastPositions = data.lastPositions || {};
     this.seatAssignments = data.seatAssignments || {};
     this.revealPolicy = data.revealPolicy || 'immediate';
@@ -259,6 +260,11 @@ export default class MeetingScene extends Phaser.Scene {
     this.game.events.on('toggle-voting', (votingOn) => {
       if (votingOn) this.enterVotingPhase();
     });
+
+    // Check if we started in voting phase
+    if (this.phase === 'voting') {
+      this.enterVotingPhase();
+    }
   }
 
   update(time) {

@@ -174,8 +174,8 @@ export const endRound = async (roomCode, reason = 'timer') => {
       return;
     }
 
-    session.phase = GAME_PHASE.DISCUSSION;
-    session.discussionTimerEnd = new Date(Date.now() + 60000); // 60 seconds discussion
+    session.phase = GAME_PHASE.VOTING;
+    session.discussionTimerEnd = new Date(Date.now() + 60000); // 60 seconds voting
     
     let reasonText = `[ROUND END] Time has expired! All movements are frozen.`;
     if (reason === 'actions') {
@@ -186,20 +186,20 @@ export const endRound = async (roomCode, reason = 'timer') => {
       messageId: 'msg_' + nanoid(8),
       type: 'ai',
       author: 'Game Master',
-      text: `${reasonText} Transitioning to Discussion Phase. Use chat to coordinate clues and suspicions.`,
+      text: `${reasonText} Transitioning to Voting Phase. Cast your votes!`,
       createdAt: new Date()
     };
     session.logs.push(endMsg);
     await session.save();
 
-    game.gameState.phase = GAME_PHASE.DISCUSSION;
-    game.phase = GAME_PHASE.DISCUSSION;
+    game.gameState.phase = GAME_PHASE.VOTING;
+    game.phase = GAME_PHASE.VOTING;
     await game.save();
 
     const io = getIO();
-    io.to(code).emit('phase-updated', GAME_PHASE.DISCUSSION);
+    io.to(code).emit('phase-updated', GAME_PHASE.VOTING);
     io.to(code).emit('timer-updated', {
-      phase: GAME_PHASE.DISCUSSION,
+      phase: GAME_PHASE.VOTING,
       endTime: session.discussionTimerEnd,
       roundNumber: session.roundNumber
     });
@@ -237,8 +237,8 @@ export const triggerEmergencyMeeting = async (roomCode, callerId, callerName) =>
     }
 
     callerChar.emergencyMeetingsRemaining -= 1;
-    session.phase = GAME_PHASE.DISCUSSION;
-    session.discussionTimerEnd = new Date(Date.now() + 60000); // 60s discussion
+    session.phase = GAME_PHASE.VOTING;
+    session.discussionTimerEnd = new Date(Date.now() + 60000); // 60s voting
 
     // Reset meeting voting state
     session.votingState = {
@@ -252,22 +252,22 @@ export const triggerEmergencyMeeting = async (roomCode, callerId, callerName) =>
       messageId: 'msg_' + nanoid(8),
       type: 'ai',
       author: 'Game Master',
-      text: `🚨 [EMERGENCY MEETING] Investigator ${callerName} has called an emergency meeting! All movements are frozen. Transitioning to Discussion Phase.`,
+      text: `🚨 [EMERGENCY MEETING] Investigator ${callerName} has called an emergency meeting! All movements are frozen. Transitioning to Voting Phase.`,
       createdAt: new Date()
     };
     session.logs.push(meetingMsg);
     await session.save();
 
-    game.gameState.phase = GAME_PHASE.DISCUSSION;
-    game.phase = GAME_PHASE.DISCUSSION;
+    game.gameState.phase = GAME_PHASE.VOTING;
+    game.phase = GAME_PHASE.VOTING;
     await game.save();
 
     const io = getIO();
     io.to(code).emit('meeting:called', { callerId, callerName });
     io.to(code).emit('meeting:start', { callerId, callerName });
-    io.to(code).emit('phase-updated', GAME_PHASE.DISCUSSION);
+    io.to(code).emit('phase-updated', GAME_PHASE.VOTING);
     io.to(code).emit('timer-updated', {
-      phase: GAME_PHASE.DISCUSSION,
+      phase: GAME_PHASE.VOTING,
       endTime: session.discussionTimerEnd,
       roundNumber: session.roundNumber
     });
