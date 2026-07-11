@@ -140,7 +140,7 @@ export const startGame = async (roomCode, hostId) => {
     throw new AppError('All players must be ready to start', 400);
   }
 
-  if (game.sessionId) {
+  if (game.sessionId && game.status !== GAME_STATUS.ENDED) {
     throw new AppError('Game has already been initialized', 400);
   }
 

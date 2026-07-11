@@ -858,7 +858,7 @@ export default class FinalRevealScene extends Phaser.Scene {
         });
 
         playAgainBtn.on('pointerdown', () => {
-          window.location.href = `/investigation/${this.roomCode}`;
+          window.location.href = `/lobby/${this.roomCode}`;
         });
       });
     });

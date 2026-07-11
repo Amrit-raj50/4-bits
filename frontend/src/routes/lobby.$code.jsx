@@ -154,7 +154,7 @@ function Lobby() {
   const minPlayers = room.settings?.minPlayers || 4;
   const meetsMin = players.length >= minPlayers;
   const allReady = players.length > 0 && players.every((p) => p.isReady);
-  const canBegin = isHost && meetsMin && allReady && room.status === "waiting";
+  const canBegin = isHost && meetsMin && allReady && room.status !== "started";
 
   const onToggleReady = async () => {
     if (!me || !socketRef.current) return;
