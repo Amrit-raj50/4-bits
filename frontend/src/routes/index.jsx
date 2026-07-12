@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SettingsModal } from "@/components/SettingsModal";
-import wallImage from "@/assets/the great wall.png";
+import LandingCanvas from "@/components/LandingCanvas";
 import { getReduceMotion, subscribeReduceMotion } from "@/lib/preferences";
 import { useTransition } from "@/lib/transitions";
 
@@ -34,367 +34,58 @@ function Home() {
 
   return (
     <main className="min-h-screen bg-[color:var(--color-bg-base)] text-[color:var(--color-text-primary)]">
-      <HeroScene
-        reduceMotion={reduceMotion}
-        onOpenSettings={() => setSettingsOpen(true)} />
+      <LandingCanvas reduceMotion={reduceMotion} />
       
+      <section className="relative h-screen w-full overflow-hidden select-none flex flex-col items-center justify-center pointer-events-none" style={{ minHeight: 640 }}>
+        {/* Settings Button */}
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className="absolute top-6 right-6 z-20 pointer-events-auto p-2 opacity-50 hover:opacity-100 transition-opacity"
+        >
+          <span className="font-mono text-xs tracking-widest text-[#9c9186]">SETTINGS</span>
+        </button>
+
+        <div className="z-10 flex flex-col items-center mt-[-10vh]">
+          <span className="font-['VT323'] text-xl tracking-widest text-[#9c9186] mb-4">CASE FILE &middot; PROLOGUE</span>
+          
+          <h1 className="font-['VT323'] text-7xl md:text-8xl lg:text-9xl tracking-wide text-[#e8e1d3] drop-shadow-2xl text-center leading-none" style={{ textShadow: '0px 4px 0px #0a0503' }}>
+            The Last<br />Witness
+          </h1>
+          
+          <p className="mt-6 text-xl md:text-2xl font-['VT323'] text-[#9c9186] max-w-md text-center" style={{ textShadow: '0px 2px 0px #0a0503' }}>
+            Four remain. One is guilty. The truth lies buried in the dark.
+          </p>
+
+          <div className="mt-12 flex flex-col sm:flex-row gap-6 pointer-events-auto">
+            <Link
+              to="/create-room"
+              className="group relative px-8 py-4 bg-[#8a2029] hover:bg-[#a62631] transition-colors"
+              style={{ boxShadow: 'inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.2)' }}
+            >
+              <div className="absolute inset-0 border-4 border-[#1a1113]" />
+              <span className="font-['VT323'] text-2xl md:text-3xl tracking-widest text-[#e8e1d3] group-hover:text-white transition-colors" style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>CREATE ROOM</span>
+            </Link>
+
+            <Link
+              to="/join-room"
+              className="group relative px-8 py-4 bg-[#4a4541] hover:bg-[#655d56] transition-colors"
+              style={{ boxShadow: 'inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.2)' }}
+            >
+              <div className="absolute inset-0 border-4 border-[#1a1113]" />
+              <span className="font-['VT323'] text-2xl md:text-3xl tracking-widest text-[#e8e1d3] group-hover:text-white transition-colors" style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>JOIN ROOM</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <HowItWorks />
       <Footer />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-    </main>);
+    </main>
+  );
 
 }
 
-function HeroScene({
-  reduceMotion,
-  onOpenSettings
-
-
-
-}) {
-  const sceneRef = useRef(null);
-  const maskRef = useRef(null);
-  const rafRef = useRef(null);
-  const targetRef = useRef({ x: -9999, y: -9999, active: false });
-  const currentRef = useRef({ x: -9999, y: -9999, opacity: 0 });
-  const { fogPaused, runTransition } = useTransition();
-
-  const [hoverCreate, setHoverCreate] = useState(false);
-  const [hoverJoin, setHoverJoin] = useState(false);
-  const [hintVisible, setHintVisible] = useState(true);
-
-  // Reveal radius (px). Feathered edge via radial-gradient mask.
-  const RADIUS = 220;
-
-  useEffect(() => {
-    const t = setTimeout(() => setHintVisible(false), 4200);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    if (reduceMotion || fogPaused) return;
-    const scene = sceneRef.current;
-    const mask = maskRef.current;
-    if (!scene || !mask) return;
-
-    const onMove = (clientX, clientY) => {
-      const rect = scene.getBoundingClientRect();
-      targetRef.current.x = clientX - rect.left;
-      targetRef.current.y = clientY - rect.top;
-      targetRef.current.active = true;
-    };
-
-    const handleMouseMove = (e) => onMove(e.clientX, e.clientY);
-    const handleMouseLeave = () => {
-      targetRef.current.active = false;
-    };
-    const handleTouchMove = (e) => {
-      const t = e.touches[0];
-      if (t) onMove(t.clientX, t.clientY);
-    };
-    const handleTouchEnd = () => {
-      targetRef.current.active = false;
-    };
-
-    scene.addEventListener("mousemove", handleMouseMove);
-    scene.addEventListener("mouseleave", handleMouseLeave);
-    scene.addEventListener("touchmove", handleTouchMove, { passive: true });
-    scene.addEventListener("touchend", handleTouchEnd);
-
-    const tick = () => {
-      const target = targetRef.current;
-      const cur = currentRef.current;
-      // Smooth follow
-      cur.x += (target.x - cur.x) * 0.35;
-      cur.y += (target.y - cur.y) * 0.35;
-      // Opacity: rise fast on active, fade over ~2.5s when idle
-      const targetOpacity = target.active ? 1 : 0;
-      const rate = target.active ? 0.25 : 0.012;
-      cur.opacity += (targetOpacity - cur.opacity) * rate;
-
-      mask.style.opacity = String(cur.opacity);
-      mask.style.setProperty("--rx", `${cur.x}px`);
-      mask.style.setProperty("--ry", `${cur.y}px`);
-
-      // Hotspot proximity → activate button reveal
-      const rect = scene.getBoundingClientRect();
-      const cx = HOTSPOTS.create.xPct / 100 * rect.width;
-      const cy = HOTSPOTS.create.yPct / 100 * rect.height;
-      const jx = HOTSPOTS.join.xPct / 100 * rect.width;
-      const jy = HOTSPOTS.join.yPct / 100 * rect.height;
-      const near = (ax, ay) =>
-      cur.opacity > 0.35 &&
-      Math.hypot(cur.x - ax, cur.y - ay) < RADIUS * 0.9;
-      setHoverCreate(near(cx, cy));
-      setHoverJoin(near(jx, jy));
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      scene.removeEventListener("mousemove", handleMouseMove);
-      scene.removeEventListener("mouseleave", handleMouseLeave);
-      scene.removeEventListener("touchmove", handleTouchMove);
-      scene.removeEventListener("touchend", handleTouchEnd);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [reduceMotion, fogPaused]);
-
-  // Reduce-motion: keep both hotspots always revealed
-  useEffect(() => {
-    if (reduceMotion) {
-      setHoverCreate(true);
-      setHoverJoin(true);
-    }
-  }, [reduceMotion]);
-
-  const wallUrl = wallImage;
-
-  return (
-    <section
-      ref={sceneRef}
-      className="relative h-screen w-full overflow-hidden select-none"
-      style={{ minHeight: 640 }}>
-      
-      {/* True (sharp) layer */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: `url(${wallUrl})` }} />
-      
-
-      {/* Fogged layer — same image, blurred/desaturated */}
-      {!reduceMotion &&
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-center bg-cover"
-        style={{
-          backgroundImage: `url(${wallUrl})`,
-          filter: "blur(14px) saturate(0.55) brightness(0.78) contrast(0.85)",
-          transform: "scale(1.06)"
-        }} />
-
-      }
-
-      {/* Ambient drifting fog overlay (calm) */}
-      {!reduceMotion &&
-      <div
-        aria-hidden
-        className="fog-ambient absolute inset-0 mix-blend-screen opacity-40"
-        style={{
-          backgroundImage:
-          "radial-gradient(ellipse at 20% 30%, rgba(230,220,200,0.10), transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(200,190,175,0.09), transparent 60%)",
-          backgroundSize: "180% 180%, 200% 200%",
-          animation: "fog-drift 22s ease-in-out infinite"
-        }} />
-
-      }
-
-      {/* Reveal mask: this element is the true image, masked to a soft circle around the cursor.
-           When opacity rises, it "punches through" the fog above. */}
-      {!reduceMotion &&
-      <div
-        ref={maskRef}
-        aria-hidden
-        className="fog-reveal-mask absolute inset-0 bg-center bg-cover pointer-events-none"
-        style={{
-          backgroundImage: `url(${wallUrl})`,
-          opacity: 0,
-          WebkitMaskImage:
-          "radial-gradient(circle at var(--rx,50%) var(--ry,50%), rgba(0,0,0,1) 0px, rgba(0,0,0,0.9) 90px, rgba(0,0,0,0.55) 160px, rgba(0,0,0,0.15) 210px, rgba(0,0,0,0) 240px)",
-          maskImage:
-          "radial-gradient(circle at var(--rx,50%) var(--ry,50%), rgba(0,0,0,1) 0px, rgba(0,0,0,0.9) 90px, rgba(0,0,0,0.55) 160px, rgba(0,0,0,0.15) 210px, rgba(0,0,0,0) 240px)",
-          transition: "opacity 120ms linear"
-        }} />
-
-      }
-
-
-      {/* Touch-only auto sweep fallback (in case user isn't dragging) */}
-      {!reduceMotion &&
-      <div
-        aria-hidden
-        className="touch-sweep pointer-events-none absolute inset-y-0 w-[40vw] hidden touch:block"
-        style={{
-          background:
-          "radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%)",
-          animation: "touch-sweep 14s linear infinite"
-        }} />
-
-      }
-
-      {/* Top/bottom vignette for legibility of fixed UI */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-40"
-        style={{
-          background:
-          "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0))"
-        }} />
-      
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
-        style={{
-          background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0))"
-        }} />
-      
-
-      {/* Fixed UI layer — always legible, above the fog */}
-      <div className="absolute inset-0 z-20 flex flex-col">
-        {/* Top bar */}
-        <div className="flex items-start justify-between px-6 pt-5 md:px-10 md:pt-7">
-          <span className="tracked-caps text-[11px] text-[color:var(--color-text-secondary)]">
-            Case File · Prologue
-          </span>
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className="tracked-caps text-[11px] text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--color-border-hairline-strong)] px-1 py-1">
-            
-            Settings
-          </button>
-        </div>
-
-        {/* Title block */}
-        <div className="mt-6 md:mt-10 flex flex-col items-center px-6 text-center">
-          <div
-            className="max-w-3xl px-6 py-4 rounded-sm"
-            style={{
-              background:
-              "radial-gradient(ellipse at center, rgba(10,8,9,0.55) 0%, rgba(10,8,9,0) 75%)"
-            }}>
-            
-            <h1
-              className="font-serif-display text-4xl md:text-6xl lg:text-7xl text-[color:var(--color-text-primary)] leading-[1.05]"
-              style={{ textShadow: "0 2px 20px rgba(0,0,0,0.7)" }}>
-              
-              The Last Witness
-            </h1>
-            <div
-              className="mx-auto mt-5 h-px w-24"
-              style={{ backgroundColor: "var(--color-accent-blood)" }} />
-            
-            <p className="mt-4 text-sm md:text-base text-[color:var(--color-text-secondary)] font-sans max-w-xl mx-auto">
-              Every session generates a new crime. Every player receives a
-              different piece of the truth.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex-1" />
-
-        {/* On-load hint */}
-        {!reduceMotion &&
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center"
-          style={{
-            animation: hintVisible ?
-            "fade-out-hint 5s ease-in-out forwards" :
-            undefined,
-            opacity: hintVisible ? 1 : 0,
-            visibility: hintVisible ? "visible" : "hidden"
-          }}>
-          
-            <span className="tracked-caps text-[10px] text-[color:var(--color-text-tertiary)]">
-              Move closer to see clearly
-            </span>
-          </div>
-        }
-      </div>
-
-      {/* Interactive hotspots — positioned on empty wall patches */}
-      <WallLabel
-        label="Create Room"
-        revealed={hoverCreate || reduceMotion}
-        style={{
-          left: `${HOTSPOTS.create.xPct}%`,
-          top: `${HOTSPOTS.create.yPct}%`,
-          width: HOTSPOTS.create.w,
-          height: HOTSPOTS.create.h
-        }}
-        onActivate={(origin) =>
-        runTransition("exhale", { to: HOTSPOTS.create.to }, origin)
-        } />
-      
-      <WallLabel
-        label="Join Room"
-        revealed={hoverJoin || reduceMotion}
-        style={{
-          left: `${HOTSPOTS.join.xPct}%`,
-          top: `${HOTSPOTS.join.yPct}%`,
-          width: HOTSPOTS.join.w,
-          height: HOTSPOTS.join.h
-        }}
-        onActivate={(origin) =>
-        runTransition("sweep", { to: HOTSPOTS.join.to }, origin)
-        } />
-      
-    </section>);
-
-}
-
-function WallLabel({
-  label,
-  revealed,
-  style,
-  onActivate
-
-
-
-
-
-}) {
-  const [pressed, setPressed] = useState(false);
-
-  const handleClick = (e) => {
-    if (pressed) return;
-    setPressed(true);
-    const origin = { x: e.clientX, y: e.clientY };
-    // Press-acknowledgment beat before the transition kicks off.
-    window.setTimeout(() => onActivate(origin), 100);
-    // Safety unlock in case navigation is cancelled.
-    window.setTimeout(() => setPressed(false), 2000);
-  };
-
-  const activeAccent = pressed || revealed;
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-label={label}
-      className="group absolute z-30 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center focus:outline-none"
-      style={style}>
-      
-      <span
-        className="tracked-caps text-base md:text-lg transition-all duration-500"
-        style={{
-          color: revealed ?
-          "var(--color-text-primary)" :
-          "rgba(232,225,211,0.48)",
-          textShadow: revealed ?
-          "0 1px 14px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.6)" :
-          "0 1px 10px rgba(0,0,0,0.85), 0 0 18px rgba(0,0,0,0.6)",
-          letterSpacing: "0.32em",
-          filter: revealed ? "none" : "blur(0.6px)",
-          fontWeight: 600
-        }}>
-        
-        {label}
-      </span>
-      <span
-        aria-hidden
-        className="absolute inset-0 transition-all duration-150"
-        style={{
-          border: `1px solid ${activeAccent ? "var(--color-accent-blood-hover)" : "transparent"}`,
-          opacity: activeAccent ? 1 : 0,
-          backgroundColor: pressed ? "rgba(10,8,9,0.35)" : "transparent"
-        }} />
-      
-    </button>);
-
-}
 
 
 function HowItWorks() {
