@@ -76,8 +76,10 @@ function ErrorComponent({ error, reset }) {
 export const Route = createRootRouteWithContext()({
   head: () => ({
     meta: [
-    { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" },
+    { name: "theme-color", content: "#0d0b0c" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "black" },
     { title: "The Last Witness — A Cooperative Investigation" },
     {
       name: "description",
