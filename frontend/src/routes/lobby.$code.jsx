@@ -10,6 +10,8 @@ import {
 } from "@/lib/rooms";
 import { getPlayerId } from "@/lib/player-id";
 import GameCanvas from "@/components/GameCanvas";
+import LandingCanvas from "@/components/LandingCanvas";
+import { getReduceMotion } from "@/lib/preferences";
 
 export const Route = createFileRoute("/lobby/$code")({
   component: Lobby
@@ -173,33 +175,36 @@ function Lobby() {
     setBusy(false);
   };
 
+  const reduceMotion = getReduceMotion();
+
   return (
-    <main className="min-h-screen bg-[color:var(--color-bg-base)] px-6 py-6 flex flex-col justify-center overflow-y-auto">
-      <div className="mx-auto max-w-5xl w-full">
+    <main className="min-h-screen bg-[color:var(--color-bg-base)] px-6 py-6 flex flex-col justify-center overflow-y-auto relative">
+      <LandingCanvas reduceMotion={reduceMotion} focusRoom="foyer" />
+      
+      <div className="mx-auto max-w-5xl w-full relative z-10">
         <Link
           to="/"
-          className="tracked-caps text-[10px] text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)]">
-          
+          className="font-['VT323'] text-xl text-[color:var(--color-text-secondary)] hover:text-white drop-shadow-md">
           ← Leave
         </Link>
 
-        <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between">
+        <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between bg-[#0a0809]/90 border-4 border-[#1a1113] p-4 shadow-[10px_10px_0px_rgba(0,0,0,0.8)]">
           <div>
-            <span className="tracked-caps text-[10px] text-[color:var(--color-text-tertiary)]">
+            <span className="font-['VT323'] text-xl text-[color:var(--color-text-tertiary)] tracking-widest">
               Investigation · {MODE_LABELS[room.mode] || 'Unknown'}
             </span>
-            <h1 className="font-serif-display mt-1 text-2xl md:text-3xl text-[color:var(--color-text-primary)]">
+            <h1 className="font-['VT323'] mt-1 text-5xl text-white drop-shadow-md">
               {room.name || 'Mystery Game'}
             </h1>
-            <p className="mt-1 text-xs text-[color:var(--color-text-secondary)] max-w-2xl">
-              Host: {room.players.find((p) => p.isHost)?.name || 'Unknown'} · {players.length} / {room.settings?.maxPlayers || 0} investigators
+            <p className="mt-1 text-xl font-['VT323'] text-[color:var(--color-text-secondary)] max-w-2xl">
+              Host: <span className="text-white">{room.players.find((p) => p.isHost)?.name || 'Unknown'}</span> · {players.length} / {room.settings?.maxPlayers || 0} investigators
             </p>
           </div>
-          <div className="text-right">
-            <span className="tracked-caps block text-[9px] text-[color:var(--color-text-tertiary)]">
+          <div className="text-right mt-4 md:mt-0">
+            <span className="font-['VT323'] block text-lg text-[color:var(--color-text-tertiary)] tracking-widest">
               Case Code
             </span>
-            <span className="font-serif-display mt-0.5 block text-2xl tracking-[0.4em] text-[color:var(--color-accent-blood)]">
+            <span className="font-['VT323'] mt-0.5 block text-5xl tracking-widest text-[#8a2029] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
               {room.roomCode}
             </span>
           </div>
@@ -207,7 +212,7 @@ function Lobby() {
 
         <div className="mt-4 flex flex-col md:flex-row gap-4 justify-center items-stretch">
           {socket && (
-            <div className="w-full md:w-[480px] h-[360px] shrink-0 relative overflow-hidden bg-stone-950 border border-[color:var(--color-border-hairline-strong)]">
+            <div className="w-full md:w-[480px] h-[360px] shrink-0 relative overflow-hidden bg-[#0a0809]/95 border-4 border-[#1a1113] shadow-[10px_10px_0px_rgba(0,0,0,0.8)]">
               <GameCanvas
                 sceneKey="LobbyScene"
                 socket={socket}
@@ -219,57 +224,53 @@ function Lobby() {
           )}
 
           <div
-            className="w-full md:w-[320px] h-[360px] border p-4 flex flex-col"
-            style={{
-              backgroundColor: "var(--color-bg-elevated)",
-              borderColor: "var(--color-border-hairline-strong)"
-            }}>
+            className="w-full md:w-[320px] h-[360px] border-4 border-[#1a1113] p-4 flex flex-col bg-[#0a0809]/95 shadow-[10px_10px_0px_rgba(0,0,0,0.8)]">
             
-            <div className="flex items-baseline justify-between shrink-0">
-              <span className="tracked-caps text-[11px] text-[color:var(--color-text-secondary)]">
+            <div className="flex items-baseline justify-between shrink-0 mb-4 border-b border-[#3b2a2d] pb-2">
+              <span className="font-['VT323'] text-xl text-[color:var(--color-text-secondary)] tracking-widest">
                 Investigators
               </span>
-              <span className="tracked-caps text-[11px] text-[color:var(--color-text-tertiary)]">
+              <span className="font-['VT323'] text-xl text-[color:var(--color-text-tertiary)] tracking-widest">
                 {players.length} / {maxPlayers}
               </span>
             </div>
 
-            <ul className="mt-2 divide-y divide-[color:var(--color-border-hairline)] overflow-y-auto flex-1">
+            <ul className="mt-2 divide-y divide-[#1a1113] overflow-y-auto flex-1">
               {players.map((p) =>
-              <li key={p.playerId} className="flex items-center justify-between py-2">
+              <li key={p.playerId} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-serif-display text-base text-[color:var(--color-text-primary)] truncate max-w-[150px]" title={p.name}>
+                    <span className="font-['VT323'] text-2xl text-white drop-shadow-md truncate max-w-[150px]" title={p.name}>
                       {p.name}
                     </span>
                     {p.isHost &&
-                  <span className="tracked-caps text-[8px] text-[color:var(--color-text-tertiary)] shrink-0">
-                        Lead
+                  <span className="font-['VT323'] text-sm text-[color:var(--color-text-tertiary)] shrink-0 tracking-widest mt-1">
+                        LEAD
                       </span>
                   }
                     {p.playerId === playerId &&
-                  <span className="tracked-caps text-[8px] text-[color:var(--color-accent-blood-hover)] shrink-0">
-                        You
+                  <span className="font-['VT323'] text-sm text-[color:var(--color-accent-blood-hover)] shrink-0 tracking-widest mt-1">
+                        YOU
                       </span>
                   }
                   </div>
                   <span
-                  className="tracked-caps text-[9px] shrink-0"
+                  className="font-['VT323'] text-lg shrink-0 tracking-widest drop-shadow-md mt-1"
                   style={{
                     color: p.isReady ?
-                    "var(--color-text-primary)" :
+                    "white" :
                     "var(--color-text-tertiary)"
                   }}>
                   
-                    {p.isReady ? "Ready" : "Waiting"}
+                    {p.isReady ? "READY" : "WAITING"}
                   </span>
                 </li>
               )}
               {Array.from({ length: Math.max(0, maxPlayers - players.length) }).map((_, i) =>
-              <li key={`empty-${i}`} className="flex items-center justify-between py-2 opacity-40">
-                  <span className="tracked-caps text-[10px] text-[color:var(--color-text-tertiary)] truncate">
+              <li key={`empty-${i}`} className="flex items-center justify-between py-3 opacity-40">
+                  <span className="font-['VT323'] text-xl text-[color:var(--color-text-tertiary)] truncate tracking-widest">
                     Awaiting investigator
                   </span>
-                  <span className="tracked-caps text-[9px] text-[color:var(--color-text-tertiary)]">
+                  <span className="font-['VT323'] text-lg text-[color:var(--color-text-tertiary)] tracking-widest">
                     —
                   </span>
                 </li>
@@ -284,17 +285,17 @@ function Lobby() {
             type="button"
             onClick={onToggleReady}
             disabled={busy}
-            className="tracked-caps px-5 py-3 text-[11px] transition-colors"
-            style={{
-              border: `1px solid ${me.isReady ? "var(--color-accent-blood)" : "var(--color-border-hairline-strong)"}`,
-              color: "var(--color-text-primary)",
-              backgroundColor: me.isReady ? "rgba(113,26,36,0.15)" : "transparent"
-            }}>
+            className={`font-['VT323'] px-6 py-2.5 text-2xl transition-colors border-4 relative shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)] ${
+              me.isReady 
+                ? "bg-[#2a2a2a] border-[#1a1113] text-white hover:bg-[#333]" 
+                : "bg-[#8a2029] border-[#1a1113] text-white hover:bg-[#a62631]"
+            }`}
+            >
             
-              {me.isReady ? "Mark as Waiting" : "Mark Ready"}
+              {me.isReady ? "MARK AS WAITING" : "MARK READY"}
             </button> :
 
-          <span className="tracked-caps text-[10px] text-[color:var(--color-text-tertiary)]">
+          <span className="font-['VT323'] text-xl text-[color:var(--color-text-tertiary)] tracking-widest">
               Observing only
             </span>
           }
@@ -304,17 +305,11 @@ function Lobby() {
             type="button"
             onClick={onBegin}
             disabled={!canBegin || busy}
-            className="tracked-caps px-6 py-3 text-[11px] transition-colors"
-            style={{
-              backgroundColor: canBegin ?
-              "var(--color-accent-blood)" :
-              "transparent",
-              color: canBegin ?
-              "var(--color-text-primary)" :
-              "var(--color-text-tertiary)",
-              border: `1px solid ${canBegin ? "var(--color-accent-blood)" : "var(--color-border-hairline)"}`,
-              cursor: canBegin ? "pointer" : "not-allowed"
-            }}
+            className={`font-['VT323'] px-8 py-2.5 text-2xl transition-colors border-4 relative ${
+              canBegin 
+                ? "bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)] hover:bg-[#a62631]" 
+                : "bg-[#151314] border-[#1a1113] text-stone-600 cursor-not-allowed shadow-none"
+            }`}
             title={
             isEnded ?
             "This case has already been closed." :
@@ -325,25 +320,25 @@ function Lobby() {
             undefined
             }>
             
-              Begin the Investigation
+              BEGIN THE INVESTIGATION
             </button>
           }
         </div>
 
         {isStarted &&
-        <p className="mt-6 text-sm text-[color:var(--color-text-secondary)]">
+        <p className="mt-6 text-xl font-['VT323'] text-[color:var(--color-text-secondary)]">
             The investigation has begun.
           </p>
         }
 
         {isEnded &&
-        <p className="mt-6 text-sm text-[color:var(--color-accent-blood)]">
+        <p className="mt-6 text-xl font-['VT323'] text-[color:var(--color-accent-blood)]">
             This case file has been closed. Please create a new game.
           </p>
         }
 
-        <p className="mt-4 text-xs text-[color:var(--color-text-tertiary)]">
-          Share the code <span className="font-serif-display text-[color:var(--color-text-secondary)]">{room.roomCode}</span> with your fellow investigators so they can join.
+        <p className="mt-4 text-lg font-['VT323'] text-[color:var(--color-text-tertiary)] tracking-wider">
+          Share the code <span className="text-white drop-shadow-md">{room.roomCode}</span> with your fellow investigators so they can join.
         </p>
       </div>
     </main>);

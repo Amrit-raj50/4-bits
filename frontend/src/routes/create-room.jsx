@@ -3,9 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { createRoom, MODE_LABELS } from "@/lib/rooms";
 import { setStoredName, getStoredName } from "@/lib/player-id";
 import { FileText, User, Users, Compass, ShieldAlert, ArrowLeft, Plus } from "lucide-react";
-import GameCanvas from "@/components/GameCanvas";
-
-import wallImage from "@/assets/the great wall.png";
+import LandingCanvas from "@/components/LandingCanvas";
+import { getReduceMotion } from "@/lib/preferences";
 
 export const Route = createFileRoute("/create-room")({
   component: CreateRoom
@@ -51,96 +50,13 @@ function CreateRoom() {
     }
   };
 
+  const reduceMotion = getReduceMotion();
+
   return (
     <main 
       className="min-h-[100dvh] bg-[color:var(--color-bg-base)] px-4 py-2 md:py-4 flex flex-col justify-center relative overflow-hidden"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10,8,9,0.95), rgba(10,8,9,0.95)), url("${wallImage}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
     >
-      {/* Import noir typewriter fonts and keyframe anims */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Special+Elite&display=swap');
-        
-        .font-typewriter {
-          font-family: 'Special Elite', 'Courier Prime', monospace;
-        }
-        
-        .font-courier {
-          font-family: 'Courier Prime', monospace;
-        }
-
-        .typewriter-ink {
-          text-shadow: 0.5px 0.5px 0.5px rgba(245, 158, 11, 0.15), -0.5px -0.5px 0.5px rgba(239, 68, 68, 0.15);
-        }
-
-        .desk-lamp-glow {
-          box-shadow: inset 0 0 100px rgba(251, 191, 36, 0.08);
-        }
-
-        .grain-overlay {
-          position: absolute;
-          top: -50%;
-          left: -50%;
-          right: -50%;
-          bottom: -50%;
-          width: 200%;
-          height: 200%;
-          background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E") repeat;
-          animation: grain-shift 0.8s steps(4) infinite;
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        @keyframes grain-shift {
-          0% { transform: translate(0, 0); }
-          25% { transform: translate(-1%, 1%); }
-          50% { transform: translate(1%, -1%); }
-          75% { transform: translate(-1%, -1%); }
-          100% { transform: translate(0, 0); }
-        }
-
-        .rubber-stamp {
-          background-image: radial-gradient(circle, rgba(239, 68, 68, 0.12) 10%, transparent 80%);
-          border-style: double;
-          border-width: 3px;
-        }
-
-        @keyframes stamp-bounce {
-          0% { transform: scale(1.4) rotate(-8deg); opacity: 0.4; }
-          70% { transform: scale(0.96) rotate(2deg); opacity: 1; }
-          100% { transform: scale(1) rotate(0deg); }
-        }
-
-        .animate-stamp {
-          animation: stamp-bounce 0.2s cubic-bezier(0.25, 0.8, 0.25, 1.2) forwards;
-        }
-      `}</style>
-
-      {/* Film grain noise overlay */}
-      <div className="grain-overlay" />
-
-      {/* Cozy desk lamp lighting pool (vignette overlay) */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none desk-lamp-glow" 
-        style={{
-          background: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.08) 0%, rgba(10, 8, 9, 0.94) 80%)'
-        }}
-      />
-
-      {/* Background Phaser Canvas for walking character silhouettes */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none select-none">
-        <GameCanvas
-          sceneKey="LobbyScene"
-          socket={null}
-          roomCode="ARCHIVE"
-          playerId="viewer"
-          players={[]}
-        />
-      </div>
+      <LandingCanvas reduceMotion={reduceMotion} focusRoom="bedroom" />
 
       {/* Noir String Pin-board details in far background corners */}
       <div className="absolute inset-0 pointer-events-none select-none z-0 opacity-15 overflow-hidden">
@@ -173,10 +89,10 @@ function CreateRoom() {
           </h1>
         </div>
 
-        {/* Form panel styled as a folder sheet stacked on desk (slight rotation) */}
+        {/* Form panel styled as a dark pixel window */}
         <form
           onSubmit={onSubmit}
-          className="mt-2 border border-red-950/80 bg-red-950/10 backdrop-blur-md p-4 md:px-6 md:py-4 rounded shadow-[0_30px_60px_rgba(0,0,0,0.9),_0_0_20px_rgba(239,68,68,0.05)] relative overflow-hidden transform md:rotate-[0.3deg]"
+          className="mt-2 border-4 border-[#1a1113] bg-[#0a0809]/95 p-4 md:px-6 md:py-4 shadow-[15px_15px_0px_rgba(0,0,0,0.8)] relative overflow-hidden"
         >
           {/* File Folder Top Notch Tab effect */}
           <div className="absolute top-0 left-8 px-4 py-0.5 bg-stone-800/80 border-b border-stone-950 font-typewriter text-[8px] text-stone-500 select-none">
@@ -233,7 +149,7 @@ function CreateRoom() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-3.5 h-3.5 text-red-600" />
-                <span className="font-typewriter text-[10px] tracking-wider text-red-300/60 typewriter-ink">
+                <span className="font-['VT323'] text-[10px] tracking-wider text-red-300/60 typewriter-ink">
                   TOTAL INVESTIGATORS
                 </span>
               </div>
@@ -245,8 +161,8 @@ function CreateRoom() {
                       type="button"
                       key={n}
                       onClick={() => setMaxMembers(n)}
-                      className={`flex-1 py-1.5 font-typewriter text-base transition-all duration-200 border rounded relative ${
-                        active ? 'rubber-stamp border-red-800 text-red-500 animate-stamp shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-stone-850 text-stone-400 bg-stone-900/20 hover:border-stone-700'
+                      className={`flex-1 py-1.5 font-['VT323'] text-xl transition-colors relative border-4 ${
+                        active ? 'bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)]' : 'bg-[#151314] border-[#1a1113] text-[#9c9186] hover:bg-[#201d1f]'
                       }`}
                     >
                       {active && (
@@ -257,7 +173,7 @@ function CreateRoom() {
                   );
                 })}
               </div>
-              <p className="mt-1 text-[8px] text-stone-500 italic font-courier">
+              <p className="mt-1 text-[8px] text-stone-500 italic font-['VT323']">
                 Min 3 investigators. Max 5.
               </p>
             </div>
@@ -266,7 +182,7 @@ function CreateRoom() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
-                <span className="font-typewriter text-[10px] tracking-wider text-red-300/60 typewriter-ink">
+                <span className="font-['VT323'] text-[10px] tracking-wider text-red-300/60 typewriter-ink">
                   REVEAL ELIMINATED ROLE
                 </span>
               </div>
@@ -281,8 +197,8 @@ function CreateRoom() {
                       type="button"
                       key={policy.value}
                       onClick={() => setRevealPolicy(policy.value)}
-                      className={`flex-1 py-1.5 font-typewriter text-xs transition-all duration-200 border rounded relative ${
-                        active ? 'rubber-stamp border-red-800 text-red-500 animate-stamp shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-stone-850 text-stone-400 bg-stone-900/20 hover:border-stone-700'
+                      className={`flex-1 py-1.5 font-['VT323'] text-lg transition-colors relative border-4 ${
+                        active ? 'bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)]' : 'bg-[#151314] border-[#1a1113] text-[#9c9186] hover:bg-[#201d1f]'
                       }`}
                     >
                       {active && (
@@ -293,7 +209,7 @@ function CreateRoom() {
                   );
                 })}
               </div>
-              <p className="mt-1 text-[8px] text-stone-500 italic font-courier">
+              <p className="mt-1 text-[8px] text-stone-500 italic font-['VT323']">
                 When is an eliminated player's role shown?
               </p>
             </div>
@@ -304,7 +220,7 @@ function CreateRoom() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-3.5 h-3.5 text-red-600" />
-                <span className="font-typewriter text-[10px] tracking-wider text-red-300/60 typewriter-ink">
+                <span className="font-['VT323'] text-[10px] tracking-wider text-red-300/60 typewriter-ink">
                   TOTAL ROUNDS
                 </span>
               </div>
@@ -316,8 +232,8 @@ function CreateRoom() {
                       type="button"
                       key={n}
                       onClick={() => setMaxRounds(n)}
-                      className={`flex-1 py-1 font-typewriter text-sm transition-all duration-200 border rounded relative ${
-                        active ? 'rubber-stamp border-red-800 text-red-500 animate-stamp shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-stone-850 text-stone-400 bg-stone-900/20 hover:border-stone-700'
+                      className={`flex-1 py-1 font-['VT323'] text-xl transition-colors relative border-4 ${
+                        active ? 'bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)]' : 'bg-[#151314] border-[#1a1113] text-[#9c9186] hover:bg-[#201d1f]'
                       }`}
                     >
                       {active && (
@@ -334,7 +250,7 @@ function CreateRoom() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Compass className="w-3.5 h-3.5 text-red-600" />
-                <span className="font-typewriter text-[10px] tracking-wider text-red-300/60 typewriter-ink">
+                <span className="font-['VT323'] text-[10px] tracking-wider text-red-300/60 typewriter-ink">
                   ROUND MINUTES
                 </span>
               </div>
@@ -346,8 +262,8 @@ function CreateRoom() {
                       type="button"
                       key={n}
                       onClick={() => setRoundDurationMinutes(n)}
-                      className={`flex-1 py-1 font-typewriter text-sm transition-all duration-200 border rounded relative ${
-                        active ? 'rubber-stamp border-red-800 text-red-500 animate-stamp shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-stone-850 text-stone-400 bg-stone-900/20 hover:border-stone-700'
+                      className={`flex-1 py-1 font-['VT323'] text-xl transition-colors relative border-4 ${
+                        active ? 'bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)]' : 'bg-[#151314] border-[#1a1113] text-[#9c9186] hover:bg-[#201d1f]'
                       }`}
                     >
                       {active && (
@@ -365,7 +281,7 @@ function CreateRoom() {
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
               <Compass className="w-3.5 h-3.5 text-red-600" />
-              <span className="font-typewriter text-[10px] tracking-wider text-red-300/60 typewriter-ink">
+              <span className="font-['VT323'] text-[10px] tracking-wider text-red-300/60 typewriter-ink">
                 MYSTERY SETTING
               </span>
             </div>
@@ -377,20 +293,14 @@ function CreateRoom() {
                     type="button"
                     key={m}
                     onClick={() => setMode(m)}
-                    className={`border p-2.5 text-left transition-all duration-300 rounded relative overflow-hidden md:hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,0.6)] ${
-                      active ? 'border-red-900 bg-red-950/10 shadow-[inset_0_0_15px_rgba(239,68,68,0.08)]' : 'border-stone-900 bg-stone-950/30'
+                    className={`border-4 p-2.5 text-left transition-colors relative ${
+                      active ? 'bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)]' : 'bg-[#151314] border-[#1a1113] text-[#9c9186] hover:bg-[#201d1f]'
                     }`}
                   >
-                    {active && (
-                      // Wax Seal / stamp style badge
-                      <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-700 rounded-full border border-red-500 shadow flex items-center justify-center scale-95 animate-stamp">
-                        <div className="w-1 h-1 bg-red-950 rounded-full" />
-                      </div>
-                    )}
-                    <span className="font-serif-display block text-sm text-[color:var(--color-text-primary)]">
+                    <span className="font-['VT323'] block text-sm text-white font-bold drop-shadow-md">
                       {MODE_LABELS[m]}
                     </span>
-                    <span className="mt-1 block text-[9px] text-stone-500 leading-normal font-courier">
+                    <span className="mt-1 block text-[9px] text-stone-500 leading-normal font-['VT323']">
                       {m === "classic_mansion" && "Estates, old money drawing rooms."}
                       {m === "cyber_crime" && "Cold servers, warmer motives."}
                       {m === "haunted_house" && "Unresolved residual cases."}
@@ -404,28 +314,25 @@ function CreateRoom() {
           {error && (
             <div className="mt-8 flex items-center gap-2 bg-red-950/20 border border-red-900/30 p-4 rounded">
               <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
-              <p className="text-xs text-red-400 font-courier">{error}</p>
+              <p className="text-xs text-red-400 font-['VT323']">{error}</p>
             </div>
           )}
 
           {/* Form Actions Footer */}
           <div className="mt-4 flex items-center justify-between border-t border-red-950/50 pt-3">
-            <span className="font-typewriter text-[9px] text-stone-500 leading-tight max-w-[220px]">
+            <span className="font-['VT323'] text-[9px] text-stone-500 leading-tight max-w-[220px]">
               A unique digital case code will be assigned on startup.
             </span>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex items-center gap-2 font-typewriter px-5 py-2.5 text-[10px] transition-all duration-300 font-bold rounded border active:scale-95 shadow-md"
-              style={{
-                backgroundColor: canSubmit ? "var(--color-accent-blood)" : "transparent",
-                color: canSubmit ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
-                borderColor: canSubmit ? "var(--color-accent-blood)" : "var(--color-border-hairline-strong)",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-                boxShadow: canSubmit ? "0 4px 12px rgba(113, 26, 36, 0.4), inset 0 1px 0 rgba(255,255,255,0.15)" : "none"
-              }}
+              className={`inline-flex items-center gap-2 font-['VT323'] px-5 py-2.5 text-xl transition-colors border-4 relative ${
+                canSubmit 
+                  ? "bg-[#8a2029] border-[#1a1113] text-white shadow-[inset_-2px_-2px_0px_rgba(0,0,0,0.5),inset_2px_2px_0px_rgba(255,255,255,0.2)] hover:bg-[#a62631]" 
+                  : "bg-[#151314] border-[#1a1113] text-stone-600 cursor-not-allowed"
+              }`}
             >
-              <Plus className="w-4 h-4 shrink-0" />
+              <Plus className="w-5 h-5 shrink-0" />
               {submitting ? "COMMISSIONING…" : "COMMISSION CASE"}
             </button>
           </div>
